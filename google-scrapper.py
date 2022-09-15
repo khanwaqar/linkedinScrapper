@@ -1,10 +1,10 @@
 from getkey import getkey, key
+
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 from webdriver_manager.chrome import ChromeDriverManager
 import csv
-
 driver = webdriver.Chrome(ChromeDriverManager().install())
 
 query = 'site:linkedin.com/in/ AND "PHP developer" AND "Islamabad"'
@@ -32,13 +32,13 @@ profileArray = []
 for link in hrefs:
     if("https://pk.linkedin.com/in/" in link['href']):
         profilelink = link['href']
-        profileArray.append(profilelink)
+        profileArray.append([profilelink])
         
-  
 print(profileArray)
+
+
 with open('profiles.csv', 'w', encoding='UTF8', newline='') as f:
     writer = csv.writer(f)
-    # write multiple rows
-    writer.writerow(profileArray)
+    writer.writerows(profileArray)
 
 
