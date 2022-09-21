@@ -10,21 +10,21 @@ def index_in_list(a_list, index):
     return value
 
 
-file = open('profiles.csv')
+# file = open('profiles.csv')
 
-type(file)
-csvreader = csv.reader(file)
+# type(file)
+# csvreader = csv.reader(file)
 
-rows = []
-profilesArray = []
-for row in csvreader:
-    rows.append(row)
+# rows = []
+# profilesArray = []
+# for row in csvreader:
+#     rows.append(row)
 
-file.close()
+# file.close()
 
-for profile_urlArr in rows:
-  for profile_url in profile_urlArr:
-  	profilesArray.append(profile_url)
+# for profile_urlArr in rows:
+#   for profile_url in profile_urlArr:
+#   	profilesArray.append(profile_url)
 
 
 driver = webdriver.Chrome(ChromeDriverManager().install())
@@ -41,24 +41,19 @@ pword.send_keys("rescue1122")
 
 driver.find_element_by_xpath("//button[@type='submit']").click()
 
-# profilesArray = [
-#  "https://www.linkedin.com/in/mirza-raheel-677b7232/",
-#  "https://www.linkedin.com/in/hamid-ali-5bb93716b/",
-#  "https://www.linkedin.com/in/waqarirshadkhan/",
-#  "https://www.linkedin.com/in/musawir-mk/",
-#  "https://www.linkedin.com/in/tamoorshayat/",
-#  "https://www.linkedin.com/in/elahiehsan/",
-#  "https://www.linkedin.com/in/amaadjaved/",
-#  "https://www.linkedin.com/in/muhammad-usman-a408641a/",
-#  "https://www.linkedin.com/in/hassan-raza-693351224/",
-#  "https://www.linkedin.com/in/zehra-ahmed/"
+profilesArray = [
+ "https://www.linkedin.com/in/mirza-raheel-677b7232/",
+ "https://www.linkedin.com/in/waqarirshadkhan/",
+ "https://www.linkedin.com/in/musawir-mk/",
+ "https://www.linkedin.com/in/tamoorshayat/",
+ "https://www.linkedin.com/in/elahiehsan/",
+ ]
 
-#  ]
 info = []
 for profile_url in profilesArray:
   print(profile_url)
   profile = dict()
-  time.sleep(3)
+  time.sleep(20)
   driver.get(profile_url)
   src = driver.page_source
   soup = BeautifulSoup(src, 'lxml')
@@ -97,6 +92,58 @@ for profile_url in profilesArray:
     company = ""
     university = ""
     location = ""
+  try:
+    about = soup.find("div", {"id": "about"}).find_next_sibling("div", {"class", "display-flex ph5 pv3"}).find("div").get_text().strip()
+  except:
+    about = ""
+
+  experiences = []
+  educations = []
+  skills = []
+  
+  driver.get(profile_url+"/details/experience/")
+  time.sleep(5)
+  exp_src = driver.page_source
+    
+  # Now using beautiful soup
+  exp_soup = BeautifulSoup(exp_src, 'lxml')
+  li_tags = exp_soup.find_all("li", {"class", "pvs-list__paged-list-item"})
+  for li_tag in li_tags:
+      experience = dict()
+      try:
+          experience['job_title'] = li_tag.find("span", {"class", "t-bold"}).find("span").get_text().strip()
+          experience['company_name'] = li_tag.find("span", {"class", "t-normal"}).find("span").get_text().strip()
+          experience['joining_date'] = li_tag.find("span", {"class", "t-black--light"}).find("span").get_text().strip()
+      except:
+          continue
+      experiences.append(experience)
+
+  driver.get(profile_url+"/details/education/")
+  time.sleep(5)
+  edu_src = driver.page_source
+  edu_soup = BeautifulSoup(edu_src, 'lxml')
+  li_tags = edu_soup.find_all("li", {"class", "pvs-list__paged-list-item"})
+  for li_tag in li_tags:
+      education = dict()
+      try:
+          education['institute'] = li_tag.find("span", {"class", "t-bold"}).find("span").get_text().strip()
+          education['degree'] = li_tag.find("span", {"class", "t-normal"}).find("span").get_text().strip()
+          education['duration'] = li_tag.find("span", {"class", "t-black--light"}).find("span").get_text().strip()
+      except:
+          continue
+      educations.append(education)
+  
+  driver.get(profile_url+"/details/skills/")
+  time.sleep(5)
+  skills_src = driver.page_source
+  skills_soup = BeautifulSoup(skills_src, 'lxml')
+  li_tags = skills_soup.find_all("li", {"class", "pvs-list__paged-list-item"})
+  for li_tag in li_tags:
+      try:
+          skill = li_tag.find("span", {"class", "t-bold"}).find("span").get_text().strip()
+          skills.append(skill)
+      except:
+          continue
   
   profile['name'] = name
   profile['url'] = profile_url
@@ -105,19 +152,23 @@ for profile_url in profilesArray:
   profile['company'] = company
   profile['university'] = university
   profile['location'] = location
+  profile['about'] = about
+  profile['experience'] = experiences
+  profile['education'] = educations
+  profile['skills'] = skills
   
   print(profile)
   info.append(profile)
 
 print(info)
 
-fieldnames = ['name', 'url', 'profile_pic',  'designation', 'company', 'university',  'location']
-with open('data.csv', 'w', encoding='UTF8', newline='') as f:
+fieldnames = ['name', 'url', 'profile_pic',  'designation', 'company', 'university',  'location', 'about', 'experience', 'education', 'skills']
+with open('data_test.csv', 'w', encoding='UTF8', newline='') as f:
     writer = csv.DictWriter(f, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(info)
 
-with open('result.json', 'w') as fp:
+with open('result_test.json', 'w') as fp:
     json.dump(info, fp)
 
 

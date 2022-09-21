@@ -1,9 +1,26 @@
+from wsgiref.headers import Headers
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
 from webdriver_manager.chrome import ChromeDriverManager
 
-driver = webdriver.Chrome(ChromeDriverManager().install())
+option = webdriver.ChromeOptions()
+option.add_argument("incognito")
+option.add_argument("--disable-notifications")
+option.add_argument("--start-maximized")
+# driver = webdriver.Chrome(executable_path="./chromedriver", options=option)
+header = Headers(
+    browser="chrome",  # Generate only Chrome UA
+    os="lin",  # Generate only lin platform
+    headers=False,  # generate misc headers
+)
+custom_user_agent = header.generate()["User-Agent"]
+
+option.add_argument(f"user-agent={custom_user_agent}")
+
+# driver = webdriver.Chrome(ChromeDriverManager().install())
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=option)
+
 # Creating a webdriver instance
 #driver = webdriver.Chrome("/usr/bin/chromedriver")
 # This instance will be used to log into LinkedIn
@@ -37,8 +54,8 @@ pword.send_keys("rescue1122")
 driver.find_element_by_xpath("//button[@type='submit']").click()
 # In case of an error, try changing the
 # XPath used here.
-profile_url = "https://www.linkedin.com/in/kunalshah1/"
-  
+profile_url = "https://pk.linkedin.com/in/theusmanbhatti/"
+time.sleep(5)
 driver.get(profile_url) 
 
 src = driver.page_source
@@ -71,7 +88,7 @@ location_loc = intro.find_all("span", {'class': 'text-body-small'})
 print(location_loc)
 # Ectracting the Location
 # The 2nd element in the location_loc variable has the location
-location = location_loc.get_text().strip()
+location = location_loc[1].get_text().strip()
 
 print("Name -->", name,
 	"\nWorks At -->", works_at)
