@@ -10,21 +10,21 @@ def index_in_list(a_list, index):
     return value
 
 
-# file = open('profiles.csv')
+file = open('profiles.csv')
 
-# type(file)
-# csvreader = csv.reader(file)
+type(file)
+csvreader = csv.reader(file)
 
-# rows = []
-# profilesArray = []
-# for row in csvreader:
-#     rows.append(row)
+rows = []
+profilesArray = []
+for row in csvreader:
+    rows.append(row)
 
-# file.close()
+file.close()
 
-# for profile_urlArr in rows:
-#   for profile_url in profile_urlArr:
-#   	profilesArray.append(profile_url)
+for profile_urlArr in rows:
+  for profile_url in profile_urlArr:
+  	profilesArray.append(profile_url)
 
 
 driver = webdriver.Chrome(ChromeDriverManager().install())
@@ -41,38 +41,41 @@ pword.send_keys("rescue1122")
 
 driver.find_element_by_xpath("//button[@type='submit']").click()
 
-profilesArray = [
- "https://www.linkedin.com/in/mirza-raheel-677b7232/",
- "https://www.linkedin.com/in/waqarirshadkhan/",
- "https://www.linkedin.com/in/musawir-mk/",
- "https://www.linkedin.com/in/tamoorshayat/",
- "https://www.linkedin.com/in/elahiehsan/",
- ]
+# profilesArray = [
+#  "https://www.linkedin.com/in/mirza-raheel-677b7232/",
+#  "https://www.linkedin.com/in/waqarirshadkhan/",
+#  "https://www.linkedin.com/in/musawir-mk/",
+#  "https://www.linkedin.com/in/tamoorshayat/",
+#  "https://www.linkedin.com/in/elahiehsan/",
+#  ]
 
 info = []
 for profile_url in profilesArray:
   print(profile_url)
   profile = dict()
-  time.sleep(20)
+  time.sleep(30)
   driver.get(profile_url)
   src = driver.page_source
   soup = BeautifulSoup(src, 'lxml')
   try:
     profilePicHTML = soup.find("img", {'class', "pv-top-card-profile-picture__image pv-top-card-profile-picture__image--show ember-view"})
     profile_pic = profilePicHTML['src']
-  except:
+  except Exception as e:
+    print("Error ->>>: {} ".format(e))
     profile_pic = ""
   intro = soup.find('div', {'class': 'ph5'})
   try: 
     name_loc = intro.find("h1")
     name = name_loc.get_text().strip() 
-  except:
+  except Exception as e:
+    print("Error ->>>: {} ".format(e))
     name = ""
   
   try:
     works_at_loc = intro.find("div", {'class': 'text-body-medium'})
     works_at = works_at_loc.get_text().strip()
-  except: 
+  except Exception as e:
+    print("Error ->>>: {} ".format(e)) 
     works_at = ""
   try:
 
@@ -88,13 +91,15 @@ for profile_url in profilesArray:
     location = ""
     if(index_in_list(location_loc, 2)):
       location = location_loc[2].get_text().strip()
-  except:
+  except Exception as e:
+    print("Error ->>>: {} ".format(e))
     company = ""
     university = ""
     location = ""
   try:
     about = soup.find("div", {"id": "about"}).find_next_sibling("div", {"class", "display-flex ph5 pv3"}).find("div").get_text().strip()
-  except:
+  except Exception as e:
+    print("Error ->>>: {} ".format(e))
     about = ""
 
   experiences = []
@@ -114,8 +119,9 @@ for profile_url in profilesArray:
           experience['job_title'] = li_tag.find("span", {"class", "t-bold"}).find("span").get_text().strip()
           experience['company_name'] = li_tag.find("span", {"class", "t-normal"}).find("span").get_text().strip()
           experience['joining_date'] = li_tag.find("span", {"class", "t-black--light"}).find("span").get_text().strip()
-      except:
-          continue
+      except Exception as e:
+        print("Error ->>>: {} ".format(e))
+        continue
       experiences.append(experience)
 
   driver.get(profile_url+"/details/education/")
@@ -129,8 +135,9 @@ for profile_url in profilesArray:
           education['institute'] = li_tag.find("span", {"class", "t-bold"}).find("span").get_text().strip()
           education['degree'] = li_tag.find("span", {"class", "t-normal"}).find("span").get_text().strip()
           education['duration'] = li_tag.find("span", {"class", "t-black--light"}).find("span").get_text().strip()
-      except:
-          continue
+      except Exception as e:
+        print("Error ->>>: {} ".format(e))
+        continue
       educations.append(education)
   
   driver.get(profile_url+"/details/skills/")
@@ -142,8 +149,9 @@ for profile_url in profilesArray:
       try:
           skill = li_tag.find("span", {"class", "t-bold"}).find("span").get_text().strip()
           skills.append(skill)
-      except:
-          continue
+      except Exception as e:
+        print("Error ->>>: {} ".format(e))
+        continue
   
   profile['name'] = name
   profile['url'] = profile_url
@@ -160,15 +168,13 @@ for profile_url in profilesArray:
   print(profile)
   info.append(profile)
 
-print(info)
-
 fieldnames = ['name', 'url', 'profile_pic',  'designation', 'company', 'university',  'location', 'about', 'experience', 'education', 'skills']
-with open('data_test.csv', 'w', encoding='UTF8', newline='') as f:
+with open('data.csv', 'w', encoding='UTF8', newline='') as f:
     writer = csv.DictWriter(f, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(info)
 
-with open('result_test.json', 'w') as fp:
+with open('result.json', 'w') as fp:
     json.dump(info, fp)
 
 
