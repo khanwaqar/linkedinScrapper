@@ -22,24 +22,21 @@ for row in csvreader:
 
 file.close()
 
+f = open('keys.json')
+  
+data = json.load(f)
+datakeys = []
+for i in data:
+  datakeys.append(i)  
+f.close()
+
+#print(datakeys[0]['email_address'])
+
+
 for profile_urlArr in rows:
   for profile_url in profile_urlArr:
   	profilesArray.append(profile_url)
 
-
-driver = webdriver.Chrome(ChromeDriverManager().install())
-driver.get("https://linkedin.com/uas/login")
-
-time.sleep(5)
-
-username = driver.find_element_by_id("username")
-
-username.send_keys("developer.web289@gmail.com")
-
-pword = driver.find_element_by_id("password")
-pword.send_keys("rescue1122")		
-
-driver.find_element_by_xpath("//button[@type='submit']").click()
 
 # profilesArray = [
 #  "https://www.linkedin.com/in/mirza-raheel-677b7232/",
@@ -48,12 +45,33 @@ driver.find_element_by_xpath("//button[@type='submit']").click()
 #  "https://www.linkedin.com/in/tamoorshayat/",
 #  "https://www.linkedin.com/in/elahiehsan/",
 #  ]
-
+count_profiles = 0
+index = -1
 info = []
 for profile_url in profilesArray:
-  print(profile_url)
+  print("#Scrapping Data for : ", profile_url)
   profile = dict()
+  if(count_profiles == 0 or (count_profiles % 50 == 0)): 
+    driver = webdriver.Chrome(ChromeDriverManager().install())
+    driver.get("https://linkedin.com/uas/login")
+    
+    if(index == 2): 
+      index = -1
+
+    time.sleep(5)
+
+    username = driver.find_element_by_id("username")
+
+    username.send_keys(datakeys[index+1]['email_address'])
+
+    pword = driver.find_element_by_id("password")
+    pword.send_keys(datakeys[index+1]['password'])		
+
+    driver.find_element_by_xpath("//button[@type='submit']").click()
+    index = index + 1
+
   time.sleep(30)
+  
   driver.get(profile_url)
   src = driver.page_source
   soup = BeautifulSoup(src, 'lxml')
@@ -164,7 +182,7 @@ for profile_url in profilesArray:
   profile['experience'] = experiences
   profile['education'] = educations
   profile['skills'] = skills
-  
+  count_profiles = count_profiles + 1
   print(profile)
   info.append(profile)
 
