@@ -5,6 +5,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 import csv
 import json
 
+# chrome_options = webdriver.ChromeOptions()
+# chrome_options.add_argument('--headless')
+# chrome_options.add_argument('--disable-gpu')
+# chrome_options.add_argument('--incognito')
+# chrome_options.add_argument('log-level=3')
+
 def index_in_list(a_list, index):
     value = index < len(a_list)
     return value
@@ -18,7 +24,7 @@ csvreader = csv.reader(file)
 rows = []
 profilesArray = []
 for row in csvreader:
-    rows.append(row)
+  rows.append(row)
 
 file.close()
 
@@ -49,7 +55,7 @@ count_profiles = 0
 index = -1
 info = []
 for profile_url in profilesArray:
-  print("#Scrapping Data for : ", profile_url)
+  print("#",count_profiles,": Scrapping Data for : ", profile_url)
   profile = dict()
   if(count_profiles == 0 or (count_profiles % 50 == 0)): 
     driver = webdriver.Chrome(ChromeDriverManager().install())
@@ -70,8 +76,13 @@ for profile_url in profilesArray:
     driver.find_element_by_xpath("//button[@type='submit']").click()
     index = index + 1
 
-  time.sleep(30)
-  
+  time.sleep(15)
+  before, sep, after = profile_url.partition('?')
+  profile_url = before
+  profile_url = profile_url.replace("pk.", "")
+  print(profile_url)
+
+  #driver.implicitly_wait(10)
   driver.get(profile_url)
   src = driver.page_source
   soup = BeautifulSoup(src, 'lxml')
@@ -197,12 +208,3 @@ with open('result.json', 'w') as fp:
 
 
 driver.close()
-
-
-
-
-
-
-
-
-
